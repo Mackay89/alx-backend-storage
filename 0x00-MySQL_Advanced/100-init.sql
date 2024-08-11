@@ -1,39 +1,47 @@
-DELIMITER $$
+-- Initial
+DROP TABLE IF EXISTS corrections;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS projects;
 
-CREATE PROCEDURE ComputeAverageWeightedScoreForUser(IN user_id INT)
-BEGIN
-    DECLARE weighted_sum FLOAT DEFAULT 0;
-    DECLARE total_weight INT DEFAULT 0;
-    DECLARE average_weighted_score FLOAT;
+CREATE TABLE IF NOT EXISTS users (
+    id int not null AUTO_INCREMENT,
+    name varchar(255) not null,
+    average_score float default 0,
+    PRIMARY KEY (id)
+);
 
-    -- Calculate the weighted sum and total weight for the specified user
-    SELECT 
-        SUM(c.score * p.weight),
-        SUM(p.weight)
-    INTO 
-        weighted_sum,
-        total_weight
-    FROM 
-        corrections c
-    JOIN 
-        projects p 
-    ON 
-        c.project_id = p.id
-    WHERE 
-        c.user_id = user_id;
+CREATE TABLE IF NOT EXISTS projects (
+    id int not null AUTO_INCREMENT,
+    name varchar(255) not null,
+    weight int default 1,
+    PRIMARY KEY (id)
+);
 
-    -- Calculate the average weighted score
-    IF total_weight > 0 THEN
-        SET average_weighted_score = weighted_sum / total_weight;
-    ELSE
-        SET average_weighted_score = 0;
-    END IF;
+CREATE TABLE IF NOT EXISTS corrections (
+    user_id int not null,
+    project_id int not null,
+    score float default 0,
+    KEY `user_id` (`user_id`),
+    KEY `project_id` (`project_id`),
+    CONSTRAINT fk_user_id FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+    CONSTRAINT fk_project_id FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
+);
 
-    -- Update the user's average score
-    UPDATE users
-    SET average_score = average_weighted_score
-    WHERE id = user_id;
-END$$
+INSERT INTO users (name) VALUES ("Bob");
+SET @user_bob = LAST_INSERT_ID();
 
-DELIMITER ;
+INSERT INTO users (name) VALUES ("Jeanne");
+SET @user_jeanne = LAST_INSERT_ID();
 
+INSERT INTO projects (name, weight) VALUES ("C is fun", 1);
+SET @project_c = LAST_INSERT_ID();
+
+INSERT INTO projects (name, weight) VALUES ("Python is cool", 2);
+SET @project_py = LAST_INSERT_ID();
+
+
+INSERT INTO corrections (user_id, project_id, score) VALUES (@user_bob, @project_c, 80);
+INSERT INTO corrections (user_id, project_id, score) VALUES (@user_bob, @project_py, 96);
+
+INSERT INTO corrections (user_id, project_id, score) VALUES (@user_jeanne, @project_c, 91);
+INSERT INTO corrections (user_id, project_id, score) VALUES (@user_jeanne, @project_py, 73);
