@@ -1,20 +1,20 @@
+-- Set the delimiter to avoid conflicts with the semicolon used within the function
 DELIMITER //
 
-CREATE FUNCTION SafeDiv(a INT, b INT) RETURNS FLOAT
+-- Drop the function if it exists
+DROP FUNCTION IF EXISTS SafeDiv;
+
+-- Create the function
+CREATE FUNCTION SafeDiv(numerator FLOAT, denominator FLOAT) 
+RETURNS FLOAT
+DETERMINISTIC
 BEGIN
-    DECLARE result FLOAT;
+    RETURN CASE 
+        WHEN denominator = 0 THEN NULL 
+        ELSE numerator / denominator 
+    END;
+END//
 
-    -- Check if the divisor is 0
-    IF b = 0 THEN
-        SET result = 0;
-    ELSE
-        SET result = a / b;
-    END IF;
-
-    RETURN result;
-END;
-
-//
-
+-- Reset the delimiter to the default
 DELIMITER ;
 
