@@ -1,0 +1,6 @@
+// Connect to the database
+use my_db
+
+// Find and list all documents where the 'name' starts with "Holberton"
+db.school.find({ name: /^Holberton/ }).forEach(printjson)
+
