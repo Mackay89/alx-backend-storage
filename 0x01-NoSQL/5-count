@@ -1,3 +1,4 @@
-// Script to display the number of documents in the school collection
+// This script displays the number of documents in the 'school' collection
+
 print(db.school.countDocuments());
 

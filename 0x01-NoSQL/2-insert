@@ -1,3 +1,8 @@
-// Script to insert a document into the school collection
+// This script inserts a document into the 'school' collection
+// The database name is specified when running the script
+
+// Use the database provided as an argument
+// Note: 'db' object is automatically available and set to the specified database
+
 db.school.insertOne({ name: "Holberton school" });
 

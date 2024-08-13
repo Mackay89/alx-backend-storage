@@ -13,5 +13,9 @@ def list_all(mongo_collection: Collection) -> List[Dict]:
     Returns:
         List[Dict]: A list of documents in the collection. Returns an empty list if no documents are found.
     """
-    return list(mongo_collection.find())
+    try:
+        return list(mongo_collection.find())
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return []
 
