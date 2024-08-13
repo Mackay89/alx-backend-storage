@@ -1,29 +1,51 @@
 #!/usr/bin/env python3
-""" 12-log_stats.py """
+""" Script to display log statistics from a MongoDB collection """
 
 from pymongo import MongoClient
+from collections import Counter
 
-def main():
-    """Prints stats about Nginx logs stored in MongoDB"""
-    client = MongoClient('mongodb://127.0.0.1:27017')
+def log_stats():
+    """ Function to print log statistics from MongoDB """
+    client = MongoClient('mongodb://localhost:27017/')
     db = client.logs
     collection = db.nginx
 
-    # Total number of logs
+    # Count total logs
     total_logs = collection.count_documents({})
     print(f"{total_logs} logs")
 
-    # Count documents by method
-    methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+    # Count methods
+    methods = collection.aggregate([
+        {"$group": {"_id": "$method", "count": {"$sum": 1}}},
+        {"$sort": {"_id": 1}}
+    ])
+    
     print("Methods:")
     for method in methods:
-        count = collection.count_documents({"method": method})
-        print(f"\tmethod {method}: {count}")
+        print(f"    method {method['_id']}: {method['count']}")
 
-    # Count documents with method=GET and path=/status
-    status_check = collection.count_documents({"method": "GET", "path": "/status"})
-    print(f"{status_check} status check")
+    # Count status
+    status_count = collection.aggregate([
+        {"$group": {"_id": "$status", "count": {"$sum": 1}}},
+        {"$sort": {"_id": 1}}
+    ])
+
+    print(f"{total_logs} status check")
+    for status in status_count:
+        print(f"    status {status['_id']}: {status['count']}")
+
+    # Count IPs
+    ip_counts = collection.aggregate([
+        {"$group": {"_id": "$ip", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 10}
+    ])
+
+    print("IPs:")
+    for ip in ip_counts:
+        print(f"    {ip['_id']}: {ip['count']}")
 
 if __name__ == "__main__":
-    main()
+    log_stats()
+)
 
