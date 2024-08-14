@@ -1,0 +1,9 @@
+CREATE TABLE metal_bands (
+    band_id INT AUTO_INCREMENT PRIMARY KEY,
+    band_name VARCHAR(255) NOT NULL,
+    formed YEAR NOT NULL,
+    split YEAR,
+    style VARCHAR(255) NOT NULL,
+    fans INT
+);
+

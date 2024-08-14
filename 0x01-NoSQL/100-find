@@ -1,0 +1,6 @@
+// Get the database name from the command-line argument
+var dbName = db.getMongo().getName();
+var collection = db.getCollection('school');
+
+// Find all documents where the 'name' field starts with 'Holberton'
+collection.find({ name: /^Holberton/ }).forEach(printjson);

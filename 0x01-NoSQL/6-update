@@ -1,8 +1,16 @@
+<<<<<<< HEAD
 // Use the specified database
 db = connect("mongodb://" + db.host + "/" + db.name);
 
 // Update the documents
+=======
+// Script to add a new attribute to documents in the school collection
+>>>>>>> 37f399e42c40c1255d329e7bf2d6491eded764ec
 db.school.updateMany(
     { name: "Holberton school" },
     { $set: { address: "972 Mission street" } }
 );
+<<<<<<< HEAD
+=======
+
+>>>>>>> 37f399e42c40c1255d329e7bf2d6491eded764ec

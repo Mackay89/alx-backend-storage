@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 // Get the collection and count the number of documents
 var count = db.school.countDocuments();
 
 // Print the number of documents
 print(count);
+=======
+// This script displays the number of documents in the 'school' collection
+
+print(db.school.countDocuments());
+>>>>>>> 37f399e42c40c1255d329e7bf2d6491eded764ec
 
