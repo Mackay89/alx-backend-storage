@@ -1,63 +1,84 @@
 #!/usr/bin/env python3
 """
-Module to fetch and cache web page content.
+This module provides functionality to fetch and cache HTML content from a URL.
 """
-
-import requests
 import redis
-import hashlib
-import time
+import requests
+import uuid
 from typing import Callable
+from functools import wraps
 
-# Initialize Redis client
-redis_client = redis.Redis()
+# Configure Redis client
+r = redis.Redis()
 
-def cache_page_expiration(func: Callable) -> Callable:
+def count_calls(method: Callable) -> Callable:
     """
-    Decorator to cache function results with an expiration time.
+    Decorator to count the number of times a method is called.
     """
-    def wrapper(url: str) -> str:
-        # Generate a cache key based on the URL
-        key = f"cache:{hashlib.sha256(url.encode()).hexdigest()}"
-        cached_content = redis_client.get(key)
-
-        if cached_content:
-            return cached_content.decode('utf-8')
-
-        # Call the actual function if not cached
-        content = func(url)
-        
-        # Cache the result with an expiration time of 10 seconds
-        redis_client.setex(key, 10, content)
-        return content
-
+    @wraps(method)
+    def wrapper(*args, **kwargs):
+        key = f"count:{method.__qualname__}"
+        r.incr(key)
+        return method(*args, **kwargs)
     return wrapper
 
-def count_url_accesses(func: Callable) -> Callable:
+def call_history(method: Callable) -> Callable:
     """
-    Decorator to count accesses to a URL.
+    Decorator to record function input and output history.
     """
-    def wrapper(url: str) -> str:
-        # Increment the access count for the URL
-        count_key = f"count:{url}"
-        redis_client.incr(count_key)
-        
-        return func(url)
-
+    @wraps(method)
+    def wrapper(*args, **kwargs):
+        key_inputs = f"{method.__qualname__}:inputs"
+        key_outputs = f"{method.__qualname__}:outputs"
+        r.rpush(key_inputs, str(args))
+        result = method(*args, **kwargs)
+        r.rpush(key_outputs, result)
+        return result
     return wrapper
 
-@cache_page_expiration
-@count_url_accesses
+def replay(method: Callable) -> None:
+    """
+    Replay the history of function calls.
+    """
+    key_inputs = f"{method.__qualname__}:inputs"
+    key_outputs = f"{method.__qualname__}:outputs"
+    inputs = r.lrange(key_inputs, 0, -1)
+    outputs = r.lrange(key_outputs, 0, -1)
+
+    print(f"{method.__qualname__} was called {len(inputs)} times:")
+    for inp, out in zip(inputs, outputs):
+        print(f"{method.__qualname__}{inp.decode()} -> {out.decode()}")
+
+@count_calls
+@call_history
 def get_page(url: str) -> str:
     """
-    Fetches the HTML content of a URL and returns it.
+    Fetch HTML content from a URL, cache the result with an expiration time, and track access count.
     """
-    response = requests.get(url)
-    response.raise_for_status()
-    return response.text
+    cache_key = f"cache:{url}"
+    count_key = f"count:{url}"
+
+    # Check if the page is cached
+    cached_content = r.get(cache_key)
+    if cached_content:
+        print("Cache hit")
+        return cached_content.decode('utf-8')
+
+    print("Cache miss")
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        content = response.text
+    except requests.RequestException as e:
+        print(f"Request failed: {e}")
+        return ""
+
+    # Cache the content with expiration time
+    r.setex(cache_key, 10, content)
+    r.incr(count_key)
+    return content
 
 if __name__ == "__main__":
-    # Example usage
-    url = "http://slowwly.robertomurray.co.uk"
+    url = "http://httpbin.org/get"  # Use a valid URL
     print(get_page(url))
 
