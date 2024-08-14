@@ -1,8 +1,4 @@
-// Connect to the database
-db = connect('mongodb://127.0.0.1:27017/' + db.getName());
-
 // Insert the document into the 'school' collection
 db.school.insertOne({
     name: "Holberton school"
 });
-
