@@ -2,6 +2,7 @@
 """
 Module that defines the Cache class for interacting with Redis.
 """
+
 import redis
 import uuid
 from typing import Callable, Optional, TypeVar, Any
@@ -13,6 +14,7 @@ class Cache:
     """
     A class to interact with Redis, allowing storage, retrieval, and tracking of data.
     """
+
     def __init__(self) -> None:
         """
         Initialize the Cache instance, set up Redis client, and flush the database.
