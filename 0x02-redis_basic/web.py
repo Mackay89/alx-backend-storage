@@ -1,34 +1,47 @@
 #!/usr/bin/env python3
-"""
-Main file for demonstrating the usage of the Cache class from the exercise module.
-"""
+"""Module containing a function to return HTML content of a particular URL with caching."""
+
 import redis
-from exercise import Cache
+import requests
+from functools import wraps
 
-def main() -> None:
-    """
-    Demonstrates storing data in Redis using the Cache class and retrieving it.
-    """
-    # Initialize the Cache class
-    cache = Cache()
+# Initialize the Redis connection
+data = redis.Redis()
 
-    # Define the data to be stored
-    data: bytes = b"hello"
+def cached_content_fun(method):
+    """Decorator to cache the content of a URL."""
 
-    # Store the data and get the key
-    key: str = cache.store(data)
-    print(f"Stored data under key: {key}")
+    @wraps(method)
+    def wrapper(url: str) -> str:
+        cached_content = data.get(f"cached:{url}")
+        if cached_content:
+            return cached_content.decode('utf-8')
 
-    # Initialize local Redis instance
-    local_redis = redis.Redis()
+        content = method(url)
+        data.setex(f"cached:{url}", 10, content)
+        return content
 
-    # Retrieve and print the stored data
-    stored_data = local_redis.get(key)
-    if stored_data:
-        print(f"Retrieved data: {stored_data.decode('utf-8')}")
-    else:
-        print("No data found for the given key.")
+    return wrapper
 
+@cached_content_fun
+def get_page(url: str) -> str:
+    """Fetches the HTML content of a URL and tracks access count."""
+    
+    # Increment the count for the URL
+    count = data.incr(f"count:{url}")
+
+    # Fetch the page content
+    content = requests.get(url).text
+
+    # Optionally print debug information
+    # print(content)
+    # print(f"Count: {count}")
+
+    return content
+
+# Example usage
 if __name__ == "__main__":
-    main()
+    # Fetch and print content of URLs
+    print(get_page('http://slowwly.robertomurray.co.uk'))
+    print(get_page('http://google.com'))
 
