@@ -1,0 +1,8 @@
+// Use the specified database
+db = connect("mongodb://" + db.host + "/" + db.name);
+
+// Update the documents
+db.school.updateMany(
+    { name: "Holberton school" },
+    { $set: { address: "972 Mission street" } }
+);
