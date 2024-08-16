@@ -6,11 +6,11 @@ from pymongo.collection import Collection
 from typing import Any, Dict
 
 def insert_school(mongo_collection: Collection, **kwargs: Any) -> str:
-    """ Insert a document into the MongoDB collection and return the document ID
+    """Insert a document into the MongoDB collection and return the document ID.
 
     Args:
         mongo_collection (Collection): The MongoDB collection object where the document will be inserted.
-        **kwargs (Any): The attributes of the document to be inserted.
+        **kwargs: The attributes of the document to be inserted.
 
     Returns:
         str: The ID of the inserted document.
