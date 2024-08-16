@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-List all documents in a MongoDB collection
+List all documents in a MongoDB collection.
 """
 
 from pymongo.collection import Collection
@@ -18,6 +18,7 @@ def list_all(mongo_collection: Collection) -> List[Dict[str, Any]]:
     """
     if mongo_collection is None:
         return []
+    
     documents = mongo_collection.find()
-    return [doc for doc in documents]
+    return list(documents)
 

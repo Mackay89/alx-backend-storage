@@ -1,27 +1,22 @@
+#!/usr/bin/env python3
+"""Module containing script that returns students sorted by average score."""
+import pymongo
+
 def top_students(mongo_collection):
-    """
-    Return all students sorted by average score.
-    
-    Parameters:
-    mongo_collection (pymongo.collection.Collection): The pymongo collection object for the students.
-    
+    """Function that returns all students sorted by average score.
+
+    Args:
+        mongo_collection (pymongo.collection.Collection): The MongoDB collection object.
+
     Returns:
-    List[dict]: A list of students, each with their _id, name, and averageScore, sorted by averageScore.
+        pymongo.command_cursor.CommandCursor: A cursor to the sorted list of students.
     """
-    pipeline = [
-        {
-            "$addFields": {
-                "averageScore": {
-                    "$avg": "$topics.score"
-                }
-            }
-        },
-        {
-            "$sort": {
-                "averageScore": -1
-            }
-        }
-    ]
-    
-    return list(mongo_collection.aggregate(pipeline))
+    return mongo_collection.aggregate([
+        {"$unwind": "$topics"},  # Deconstruct the array field
+        {"$group": {
+            "_id": "$name",  # Group by student name
+            "averageScore": {"$avg": "$topics.score"}  # Calculate average score
+        }},
+        {"$sort": {"averageScore": -1}}  # Sort by average score in descending order
+    ])
 
