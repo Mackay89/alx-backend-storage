@@ -16,9 +16,10 @@ def list_all(mongo_collection: Collection) -> List[Dict[str, Any]]:
     Returns:
         List[Dict[str, Any]]: A list of documents in the collection.
     """
+    # Check if mongo_collection is None (not implemented for collections)
     if mongo_collection is None:
         return []
-    
+
     # Fetch all documents from the collection
     documents = mongo_collection.find()
     # Convert cursor to a list of dictionaries
