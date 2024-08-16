@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" 8-all """
+""" This script defines a function to list all documents in a MongoDB collection """
 
 from typing import List, Dict
 from pymongo.collection import Collection
