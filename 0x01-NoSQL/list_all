@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+""" this python script returns all unique attribute names
+    contained in documents of a given MongoDB collection """
+
+from pymongo.collection import Collection
+
+def list_all(mongo_collection: Collection) -> list:
+    """ Returns a list of all unique attribute names in the collection """
+    attributes = set()
+    
+    # Iterate through all documents in the collection
+    for document in mongo_collection.find():
+        attributes.update(document.keys())
+    
+    return list(attributes)
+
